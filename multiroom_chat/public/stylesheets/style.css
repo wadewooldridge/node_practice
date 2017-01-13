@@ -1,6 +1,7 @@
 body {
     padding: 30px;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
 }
 
 a {
@@ -13,16 +14,41 @@ a {
     margin-right: auto:
 }
 
-#room-name {
-    background-color: #ddd;
-    margin-bottom: 1em;
-}
-
 #messages {
-    width: 720px;
+    width: 600px;
     height: 300px;
     overflow: auto;
     background-color: #ddd;
     margin-bottom: 1em;
     margin-right: 10px;
+}
+
+#room-list {
+    float: right;
+    width: 100px;
+    height: 300px;
+    overflow: auto;
+}
+
+#room-list div {
+    border-bottom: 1px solid #eee;
+}
+
+#room-list div:hover {
+    background-color: #ddd;
+}
+
+#room-name {
+    background-color: #ddd;
+    margin-bottom: 1em;
+}
+
+#send-message {
+    width: 600px;
+    margin-bottom: 1em;
+    margin-right: 1em;
+}
+
+#help {
+    font: 10px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
