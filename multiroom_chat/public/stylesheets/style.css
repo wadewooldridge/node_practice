@@ -11,7 +11,7 @@ a {
 #content {
     width: 800px;
     margin-left: auto;
-    margin-right: auto:
+    margin-right: auto;
 }
 
 #messages {
@@ -21,6 +21,10 @@ a {
     background-color: #ddd;
     margin-bottom: 1em;
     margin-right: 10px;
+}
+
+.system {
+    font-style: italic;
 }
 
 #room-list {
@@ -51,4 +55,8 @@ a {
 
 #help {
     font: 10px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+#help tr, #help td {
+    text-align: left;
 }

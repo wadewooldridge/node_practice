@@ -91,8 +91,8 @@ var server = http.createServer(function(request, response) {
 });
 
 // Start the http server listening.
-server.listen(3001, function() {
-    console.log('Server listening on port 3001');
+server.listen(3005, function() {
+    console.log('Server listening on port 3005');
 });
 
 // Start up the chat_server and start it listening.
