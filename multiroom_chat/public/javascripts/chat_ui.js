@@ -16,7 +16,7 @@ function divEscapedContentElement(text) {
  *  @param  {string}    text
  */
 function divSystemContentElement(text) {
-    return $('<div>').html('<i>' + text + '</i>');
+    return $('<div>').text(text).addClass('system');
 }
 
 /**
@@ -25,7 +25,6 @@ function divSystemContentElement(text) {
  *  @param  {object}    socket
  */
 function processUserInput(chatApp, socket) {
-    debugger;
     var sendMessageElem = $('#send-message');
     var message = sendMessageElem.val();
     var messagesElem = $('#messages');
@@ -35,6 +34,7 @@ function processUserInput(chatApp, socket) {
         var systemMessage = chatApp.processCommand(message);
         if (systemMessage) {
             messagesElem.append(divSystemContentElement(systemMessage));
+            messagesElem.animate({ scrollTop: messagesElem.prop('scrollHeight')}, 1000);
         }
     } else {
         // No slash, normal message to send to room member.
@@ -42,7 +42,7 @@ function processUserInput(chatApp, socket) {
 
         // Add to message log, and keep scrolled.
         messagesElem.append(divEscapedContentElement(message));
-        messagesElem.scrollTop(messagesElem.prop('scrollHeight'));
+        messagesElem.animate({ scrollTop: messagesElem.prop('scrollHeight')}, 1000);
     }
 
     // Clear out the text from the processed command/message.
@@ -58,19 +58,22 @@ $(document).ready(function() {
     // Initialize the socket and the chat application.
     var socket = io.connect();
     var chatApp = new Chat(socket);
+    var messagesElem = $('#messages');
 
     // Set up callback for joinResult (room change).
     socket.on('joinResult', function(result) {
         console.log('chat_ui: joinResult: ' + result.room);
 
         $('#room-name').text(result.room);
-        $('#messages').append(divSystemContentElement('Room changed to ' + result.room + '.'));
+        messagesElem.append(divSystemContentElement('Room changed to ' + result.room + '.'));
+        messagesElem.animate({ scrollTop: messagesElem.prop('scrollHeight')}, 1000);
     });
 
     // Set up callback for received message.
     socket.on('message', function(message) {
         console.log('chat_ui: message text: ' + message.text);
-        $('#messages').append(divEscapedContentElement(message.text));
+        messagesElem.append(divEscapedContentElement(message.text));
+        messagesElem.animate({ scrollTop: messagesElem.prop('scrollHeight')}, 1000);
     });
 
     // Set up callback for nameResult.
@@ -84,7 +87,8 @@ $(document).ready(function() {
             message = result.message;
         }
 
-        $('#messages').append(divSystemContentElement(message));
+        messagesElem.append(divSystemContentElement(message));
+        messagesElem.animate({ scrollTop: messagesElem.prop('scrollHeight')}, 1000);
     });
 
     // Set up callback for rooms.
@@ -95,9 +99,9 @@ $(document).ready(function() {
 
         for (var room in rooms) {
             // Strip leading slash.
-            room = room.substring(1, room.length);
-            if (room != '') {
-                roomListElem.append(divEscapedContentElement(room));
+            roomName = room.substring(1, room.length);
+            if (roomName != '') {
+                roomListElem.append(divEscapedContentElement(roomName));
             }
         }
 
