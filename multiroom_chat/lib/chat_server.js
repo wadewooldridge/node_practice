@@ -33,11 +33,14 @@ exports.listen = function(server) {
         handleNameChangeAttempts(socket, nickNames, namesUsed);
         handleRoomJoining(socket);
 
-        socket.on('rooms', io.sockets.manager.rooms);
-    });
+        // Provide user with list of occupied rooms on request.
+        socket.on('rooms', function() {
+            socket.emit('rooms', io.sockets.manager.rooms);
+        });
 
-    // Cleanup logic when user disconnects.
-    handleClientDisconnection(socket, nickNames, namesUsed);
+        // Cleanup logic when user disconnects.
+        handleClientDisconnection(socket);
+    });
 };
 
 /**
@@ -49,7 +52,7 @@ exports.listen = function(server) {
  */
 function assignGuestName(socket, guestNumber, nickNames, namesUsed) {
     var name = 'Guest' + guestNumber;
-    console.log('assignGuestName: ' + name + " = " + socket);
+    console.log('assignGuestName: socket id ' + socket.id + ' =  '  + name);
     nickNames[socket.id] = name;
 
     // Let the user know their guest name.
@@ -85,9 +88,9 @@ function joinRoom(socket, room) {
 
     // Send a summary of the other users in the room, if there others.
     var usersInRoom = io.sockets.clients(room);
-    if (usersInRoom > 1) {
+    if (usersInRoom.length > 1) {
         // At least one other user.
-        var usersInRoomSummary = 'Users current in ' + room + ': ';
+        var usersInRoomSummary = 'Users currently in ' + room + ': ';
 
         for (var index in usersInRoom) {
             var userSocketId = usersInRoom[index].id;
@@ -101,6 +104,7 @@ function joinRoom(socket, room) {
         }
 
         usersInRoomSummary += '.';
+        console.log('usersInRoomSummary: ' + usersInRoomSummary);
         socket.emit('message', {text: usersInRoomSummary});
     }
 }
@@ -112,7 +116,7 @@ function joinRoom(socket, room) {
 function handleClientDisconnection(socket) {
     socket.on('disconnect', function() {
         var nameIndex = namesUsed.indexOf(nickNames[socket.id]);
-        console.log('disconnect: ' + namesUsed[nameIndex] + ' from socket ' + socket.id);
+        console.log('socket id ' + socket.id + ' disconnected from ' + namesUsed[nameIndex]);
         delete namesUsed[nameIndex];
         delete nickNames[socket.id];
     });
@@ -124,6 +128,7 @@ function handleClientDisconnection(socket) {
  */
 function handleMessageBroadcasting(socket) {
     socket.on('message', function(message) {
+        console.log('socket id ' + socket.id + ' room ' + message.room + ' text "' + message.text + '"');
         socket.broadcast.to(message.room).emit('message', {
             text: nickNames[socket.id] + ': ' + message.text
         });
@@ -139,6 +144,7 @@ function handleMessageBroadcasting(socket) {
 function handleNameChangeAttempts(socket, nickNames, namesUsed) {
     // Set up callback function.
     socket.on('nameAttempt', function(name) {
+        console.log('socket id ' + socket.id + ' changing name to ' + name);
         if (name.indexOf('Guest') == 0) {
             socket.emit('nameResult', {
                 success: false,
@@ -156,7 +162,7 @@ function handleNameChangeAttempts(socket, nickNames, namesUsed) {
             console.log('nameAttempt: ' + previousName + ' is now ' + name);
             namesUsed.push(name);
             nickNames[socket.id] = name;
-            delete namesUsed[previousNamedIndex];
+            delete namesUsed[previousNameIndex];
 
             // Send success back to the user.
             socket.emit('nameResult', {
@@ -178,7 +184,8 @@ function handleNameChangeAttempts(socket, nickNames, namesUsed) {
  */
 function handleRoomJoining(socket) {
     socket.on('join', function(room) {
-        socket.leave(curerntRoom[socket.id]);
-        joinRoom(socket, room.newRoom);
+        console.log('Socket id ' + socket.id + ' moving from ' + currentRoom[socket.id] + ' to ' + room.room);
+        socket.leave(currentRoom[socket.id]);
+        joinRoom(socket, room.room);
     });
 }
