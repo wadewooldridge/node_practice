@@ -3,7 +3,9 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var busboy = require('connect-busboy');
+
+//var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -23,15 +25,19 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // Developer-friendly logging.
 app.use(logger('dev'));
 // Parse body of incoming requests.
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(busboy());
+//app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({extended: true}));
+// Parse cookies from incoming requests.
 app.use(cookieParser());
 // Server static files from ./public/
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
-app.use('/photos', photos.list);
+app.get('/photos', photos.list);
+app.get('/upload', photos.form);
+app.post('/upload', photos.submit(app.get('photos')));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
