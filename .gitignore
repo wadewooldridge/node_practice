@@ -1,4 +1,5 @@
 connect_dispatching/node_modules
 multiroom_chat/node_modules
 photo/node_modules
+photo/public/photos
 serial_flow_control/node_modules

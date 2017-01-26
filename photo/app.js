@@ -3,14 +3,15 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 var busboy = require('connect-busboy');
 
-//var bodyParser = require('body-parser');
-
+// Express modules for routing.
 var index = require('./routes/index');
 var users = require('./routes/users');
 var photos = require('./routes/photos');
 
+// Create basic application object.
 var app = express();
 
 // view engine setup
@@ -25,9 +26,9 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // Developer-friendly logging.
 app.use(logger('dev'));
 // Parse body of incoming requests.
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(busboy());
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({extended: true}));
 // Parse cookies from incoming requests.
 app.use(cookieParser());
 // Server static files from ./public/
