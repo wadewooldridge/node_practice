@@ -1,7 +1,8 @@
 // Node modules.
 var Photo = require('../models/Photo');
-var path = require('path');
 var fs = require('fs');
+var inspect = require('util').inspect;
+var path = require('path');
 var join = path.join;
 
 /* Dummy database of photos stored in an array for now. */
@@ -45,18 +46,54 @@ exports.submit = function(dir) {
     return function(req, res, next) {
         // Now using busboy for the data transfer.
         console.dir(req.busboy);
+        console.dir(req.body);
+
+        // Set up default object to be added to the database.
+        var dbObject = {
+            name: '',
+            path: ''
+        };
+
         req.pipe(req.busboy);
         req.busboy.on('file', function(fieldname, file, filename) {
             console.log('Uploading: ' + filename);
+            // Use the filename as the picture name if we don't have an explicit picture name.
+            if (dbObject.name === '')
+                dbObject.name = filename;
 
+            // Start a stream to read the file.
             var fstream = fs.createWriteStream(dir + '/' + filename);
             file.pipe(fstream);
             fstream.on('close', function() {
                 console.log('Upload complete.');
-                res.redirect('/');
-            })
+
+                // Write the new record to the database.
+                dbObject.path = filename;
+                console.log('Creating record for: ' + dbObject);
+                Photo.create(dbObject, function(err) {
+                    if (err) return next(err);
+                    // Redirect to the default path.
+                    res.redirect('/');
+                });
+            });
         });
 
+        req.busboy.on('field', function(fieldname, val, nameTruncated, valTruncated) {
+            if (nameTruncated || valTruncated) {
+                throw new Error('name or value truncated');
+            }
+
+            console.log('Field: ' + fieldname + ' = ' + inspect(val));
+            if (fieldname === 'photo-name') {
+                dbObject.name = inspect(val);
+            } else {
+                console.log('Warning: unexpected fieldname: ' + fieldname);
+            }
+        });
+
+        req.busboy.on('finish', function() {
+            console.log('Finished.');
+        });
         /*
         res.setHeader('Content-Type', 'text/plain');
         res.write('You posted:');
