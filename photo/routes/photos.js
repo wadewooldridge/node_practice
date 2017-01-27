@@ -40,6 +40,20 @@ exports.list = function(req, res, next) {
     });
 };
 
+// Export a function to handle download of a photo by ID.
+exports.download = function(dir) {
+    return function(req, res, next) {
+        var id = req.params.id;
+        Photo.findById(id, function(err, photo) {
+            if (err)
+                return next(err);
+
+            var path = join(dir, photo.path);
+            res.sendfile(path);
+        });
+    };
+};
+
 // Export a function to handle the submit of an upload.
 exports.submit = function(dir) {
     console.log('Building function for upload for ' + dir);
